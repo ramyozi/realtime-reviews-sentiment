@@ -14,6 +14,7 @@ class Review(Base):
     sentiment_score = Column(Float, nullable=True)
     sentiment_label = Column(String, nullable=True)
 
+    review_rating = Column(Float, nullable=True)  # note du film (1/2–5 sur Letterboxd)
     ts_review = Column(DateTime, nullable=True)  # quand la review a été publiée
     ts_ingest = Column(DateTime, server_default=func.now())  # quand tu l’as enregistrée
 
