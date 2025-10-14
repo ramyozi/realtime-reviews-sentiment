@@ -11,7 +11,10 @@ from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
 
 from apps.common.db import SessionLocal, Base, engine
 from apps.common.models import Review
+from langdetect import detect, DetectorFactory
 
+
+DetectorFactory.seed = 0
 Base.metadata.create_all(bind=engine)
 
 FILMS = [
@@ -165,7 +168,7 @@ async def main():
                     text=text,
                     review_url=rev["review_url"],
                     author=rev["author"],
-                    lang=rev.get("lang") or "en",
+                    lang=detect(text),
                     review_rating=rev.get("review_rating"),
                     ts_review=rev.get("ts_review"),
                     sentiment_score=score,
