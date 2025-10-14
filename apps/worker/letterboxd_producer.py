@@ -97,15 +97,20 @@ def fetch_reviews(slug: str, limit: int = 5):
             if not author or not review_url:
                 continue
 
-            # rating (0–10)
+            # rating
             rating = None
             rating_el = art.select_one("span.rating[class*='rated-']")
             if rating_el:
-                m = re.search(r"rated-(\d+)",
-                              rating_el.get("class", [None])[0] if isinstance(rating_el.get("class"), list) else
-                              rating_el["class"])
-                if m:
-                    rating = float(m.group(1))  # note sur 10
+                # récupère toutes les classes et cherche celle du type "rated-7"
+                classes = rating_el.get("class", [])
+                if isinstance(classes, str):
+                    classes = [classes]
+                for cls in classes:
+                    m = re.search(r"rated-(\d+)", cls)
+                    if m:
+                        # Letterboxd encode 3.5★ comme rated-7 (=> diviser par 2)
+                        rating = float(m.group(1)) / 2.0
+                        break
 
             # timestamp de la review
             ts_review = None

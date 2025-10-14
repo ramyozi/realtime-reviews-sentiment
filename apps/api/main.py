@@ -47,6 +47,7 @@ def list_reviews(limit: int = 20, db: Session = Depends(get_db)):
             "sentiment_score": r.sentiment_score,
             "sentiment_label": r.sentiment_label,
             "author": r.author,
+            "review_rating": r.review_rating,
             "review_url": r.review_url,
             "ts_review": r.ts_review,
             "ts_ingest": r.ts_ingest,

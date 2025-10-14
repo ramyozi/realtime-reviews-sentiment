@@ -1,8 +1,8 @@
 import time
-import requests
-import pandas as pd
-import streamlit as st
 import altair as alt
+import pandas as pd
+import requests
+import streamlit as st
 
 API_URL = "http://localhost:8000/reviews?limit=100"
 
@@ -10,7 +10,6 @@ st.set_page_config(page_title="🎬 Letterboxd Realtime Sentiment", layout="wide
 st.title("🎬 Realtime Letterboxd Sentiment Dashboard")
 
 placeholder = st.empty()
-
 REFRESH_INTERVAL = 15
 
 while True:
@@ -30,13 +29,27 @@ while True:
         df["sentiment_score"] = df["sentiment_score"].fillna(0.0)
         df["lang"] = df["lang"].fillna("en")
 
+        # --- Filtres ---
+        st.sidebar.header("🔍 Filtres")
+        film_list = sorted(df["item_id"].dropna().unique())
+        film = st.sidebar.selectbox("🎥 Choisir un film", ["(Tous)"] + film_list)
+        lang_list = sorted(df["lang"].dropna().unique())
+        lang = st.sidebar.selectbox("🌍 Langue", ["(Toutes)"] + lang_list)
+
+        if film != "(Tous)":
+            df = df[df["item_id"] == film]
+        if lang != "(Toutes)":
+            df = df[df["lang"] == lang]
+
+        st.sidebar.info(f"{len(df)} reviews affichées")
+
+        # --- KPIs ---
         total = len(df)
         pos = (df["sentiment_label"] == "pos").sum()
         neg = (df["sentiment_label"] == "neg").sum()
         neu = (df["sentiment_label"] == "neu").sum()
         avg_score = df["sentiment_score"].mean()
 
-        # KPIs
         col1, col2, col3, col4, col5 = st.columns(5)
         col1.metric("Total reviews", total)
         col2.metric("Positive", f"{pos/total*100:.0f} %")
@@ -44,7 +57,7 @@ while True:
         col4.metric("Neutral", f"{neu/total*100:.0f} %")
         col5.metric("Average score", f"{avg_score:.2f}")
 
-        # Graph 1 : Répartition globale du sentiment
+        # --- Graph 1 : Répartition globale ---
         st.subheader("📊 Sentiment Distribution (All Reviews)")
         chart_sent = (
             alt.Chart(df)
@@ -61,7 +74,7 @@ while True:
         )
         st.altair_chart(chart_sent, use_container_width=True)
 
-        # Graph 2 : Score moyen par film
+        # --- Graph 2 : Score moyen par film ---
         st.subheader("🎥 Average Sentiment Score per Movie")
         chart_movie = (
             alt.Chart(df)
@@ -76,10 +89,44 @@ while True:
         )
         st.altair_chart(chart_movie, use_container_width=True)
 
-        # Table détaillée
+        # --- Graph 3 : Histogramme des notes ---
+        if "review_rating" in df.columns and df["review_rating"].notnull().any():
+            st.subheader("⭐ Distribution des notes utilisateurs (Letterboxd)")
+            chart_rating = (
+                alt.Chart(df)
+                .mark_bar()
+                .encode(
+                    x=alt.X("review_rating:Q", bin=alt.Bin(maxbins=10), title="User Rating (0–10)"),
+                    y=alt.Y("count()", title="Count"),
+                    color=alt.value("#3498db"),
+                    tooltip=["count()", "review_rating"]
+                )
+                .properties(height=250)
+            )
+            st.altair_chart(chart_rating, use_container_width=True)
+
+        # --- Graph 4 : Corrélation ---
+        if "review_rating" in df.columns:
+            st.subheader("💬 Corrélation entre note et sentiment")
+            chart_corr = (
+                alt.Chart(df)
+                .mark_circle(size=60, opacity=0.7)
+                .encode(
+                    x=alt.X("review_rating", title="User Rating (Letterboxd)"),
+                    y=alt.Y("sentiment_score", title="Sentiment (VADER)"),
+                    color=alt.Color("sentiment_label", legend=None,
+                                    scale=alt.Scale(domain=["pos", "neu", "neg"],
+                                                    range=["#2ecc71", "#95a5a6", "#e74c3c"])),
+                    tooltip=["author", "review_rating", "sentiment_score", "item_id", "lang"]
+                )
+                .properties(height=300)
+            )
+            st.altair_chart(chart_corr, use_container_width=True)
+
+        # --- Table ---
         st.subheader("🗒️ Latest Reviews")
         df_display = df[[
-            "item_id", "author", "lang", "sentiment_label", "sentiment_score", "text", "review_url"
+            "item_id","review_rating", "author", "lang", "sentiment_label", "sentiment_score", "text", "review_url"
         ]]
         df_display["color"] = df_display["sentiment_label"].map({
             "pos": "🟩 positive",
@@ -87,12 +134,11 @@ while True:
             "neu": "⬜ neutral"
         })
         st.dataframe(
-            df_display[["item_id", "author", "lang", "color", "sentiment_score", "text", "review_url"]],
+            df_display[["item_id", "review_rating", "author", "lang", "color", "sentiment_score", "text", "review_url"]],
             hide_index=True,
             use_container_width=True,
         )
 
-        # rafraîchissement automatique
         time.sleep(REFRESH_INTERVAL)
         st.rerun()
 
