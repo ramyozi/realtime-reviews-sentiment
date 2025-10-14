@@ -4,6 +4,8 @@ from bs4 import BeautifulSoup
 import requests
 from sqlalchemy.orm import Session
 from sqlalchemy.exc import IntegrityError
+from vaderSentiment.vaderSentiment import SentimentIntensityAnalyzer
+
 from apps.common.db import SessionLocal, Base, engine
 from apps.common.models import Review
 
@@ -20,6 +22,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (DataPortfolioProject/1.0)"
 }
 
+analyzer = SentimentIntensityAnalyzer()
 
 def fetch_reviews(slug: str, limit: int = 5):
     """Scrappe les n premières reviews d’un film donné sur Letterboxd."""
@@ -77,6 +80,14 @@ async def main():
             reviews = fetch_reviews(slug)
             inserted = 0
             for rev in reviews:
+                score = analyzer.polarity_scores(rev["text"])["compound"]
+                if score > 0.2:
+                    label = "pos"
+                elif score < -0.2:
+                    label = "neg"
+                else:
+                    label = "neu"
+
                 r = Review(
                     source="letterboxd",
                     item_id=rev["item_id"],
@@ -84,6 +95,8 @@ async def main():
                     review_url=rev["review_url"],
                     author=rev["author"],
                     lang="en",
+                    sentiment_score=score,
+                    sentiment_label=label,
                 )
                 try:
                     db.add(r)
