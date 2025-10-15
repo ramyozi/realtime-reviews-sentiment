@@ -3,11 +3,28 @@ import altair as alt
 import pandas as pd
 import requests
 import streamlit as st
+from pathlib import Path
 
 API_URL = "https://realtime-reviews-sentiment.onrender.com/reviews?limit=100"
 
 st.set_page_config(page_title="🎬 Letterboxd Realtime Sentiment", layout="wide")
-st.title("🎬 Realtime Letterboxd Sentiment Dashboard")
+
+LOGO_PATH  = Path(__file__).parent / "images/logo.svg"
+GITHUB_URL = "https://github.com/ramyozi/realtime-reviews-sentiment"
+
+col_logo, col_title = st.columns([1, 6])
+with col_logo:
+    if LOGO_PATH.exists():
+        logo_html = f"""
+        <a href="{GITHUB_URL}" target="_blank">
+            <img src="data:image/svg+xml;base64,{Path(LOGO_PATH).read_bytes().decode('utf-8')}" 
+                 alt="Realtime Reviews Logo" width="70">
+        </a>
+        """
+        st.markdown(logo_html, unsafe_allow_html=True)
+with col_title:
+    st.title("🎬 Realtime Letterboxd Sentiment Dashboard")
+    st.caption("Realtime movie sentiment tracker powered by FastAPI, Streamlit & VADER")
 
 placeholder = st.empty()
 REFRESH_INTERVAL = 15
