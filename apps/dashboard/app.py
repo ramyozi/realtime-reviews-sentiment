@@ -1,3 +1,4 @@
+import os
 import time
 import altair as alt
 import pandas as pd
@@ -5,8 +6,19 @@ import requests
 import streamlit as st
 from pathlib import Path
 import base64
+from dotenv import load_dotenv
 
-API_URL = "https://realtime-reviews-sentiment.onrender.com/reviews?limit=100"
+if os.path.exists(".env.local"):
+    load_dotenv(".env.local")
+    print("🌱 Using local .env config")
+elif os.path.exists(".env.prod"):
+    load_dotenv(".env.prod")
+    print("🚀 Using production .env config")
+else:
+    load_dotenv()
+    print("⚙️ Using default .env")
+
+API_URL = os.getenv("API_URL", "https://ramyozi-realtime-reviews-api.hf.space/reviews")
 
 st.set_page_config(page_title="🎬 Analyse des Sentiments Letterboxd en Temps Réel", layout="wide")
 

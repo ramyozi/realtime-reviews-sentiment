@@ -18,8 +18,8 @@ ENV/
 *.env.bak
 
 # === Environment & secrets ===
-.env
-.env.*
+.env.local
+.env.example
 !.env.example
 
 # === Databases & data files ===
@@ -75,3 +75,5 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+*.pyc

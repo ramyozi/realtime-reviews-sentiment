@@ -152,6 +152,14 @@ async def main():
     db: Session = SessionLocal()
     try:
         while True:
+            # Vérifier la taille actuelle
+            count = db.query(Review).count()
+            if count >= 500:
+                print("♻️ Limite atteinte (500 reviews) → purge complète de la base.")
+                db.query(Review).delete()
+                db.commit()
+                count = 0
+
             slug = random.choice(FILMS)
             reviews = fetch_reviews(slug)
             inserted = 0
@@ -186,7 +194,7 @@ async def main():
                 except IntegrityError:
                     db.rollback()
             print(f"✅ {inserted} nouvelles reviews ajoutées pour {slug}")
-            await asyncio.sleep(30)
+            await asyncio.sleep(20)
     finally:
         db.close()
 
