@@ -4,7 +4,7 @@ import pandas as pd
 import requests
 import streamlit as st
 
-API_URL = "http://localhost:8000/reviews?limit=100"
+API_URL = "https://realtime-reviews-sentiment.onrender.com/reviews?limit=100"
 
 st.set_page_config(page_title="🎬 Letterboxd Realtime Sentiment", layout="wide")
 st.title("🎬 Realtime Letterboxd Sentiment Dashboard")
