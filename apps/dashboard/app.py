@@ -13,26 +13,33 @@ st.set_page_config(page_title="🎬 Letterboxd Realtime Sentiment", layout="wide
 LOGO_PATH  = Path(__file__).parent / "images/logo.svg"
 GITHUB_URL = "https://github.com/ramyozi/realtime-reviews-sentiment"
 
-col_logo, col_title = st.columns([1, 6])
-with col_logo:
-    if LOGO_PATH.exists():
-        with open(LOGO_PATH, "rb") as f:
-            logo_base64 = base64.b64encode(f.read()).decode("utf-8")
+if LOGO_PATH.exists():
+    with open(LOGO_PATH, "rb") as f:
+        logo_base64 = base64.b64encode(f.read()).decode("utf-8")
 
-        logo_html = f"""
-        <a href="{GITHUB_URL}" target="_blank">
-            <img src="data:image/svg+xml;base64,{logo_base64}"
-                 alt="Realtime Reviews Logo"
-                 width="70"
-                 style="margin-top:8px;">
+    logo_html = f"""
+    <div style='text-align:center; margin-top:-20px; margin-bottom:15px;'>
+        <a href="{GITHUB_URL}" target="_blank" style="text-decoration:none;">
+            <img src="data:image/svg+xml;base64,{logo_base64}" 
+                 alt="Realtime Reviews Logo" 
+                 width="140" 
+                 style="display:block; margin:auto;">
         </a>
-        """
-        st.markdown(logo_html, unsafe_allow_html=True)
-    else:
-        st.warning(f"Logo not found at {LOGO_PATH}")
-with col_title:
-    st.title("🎬 Realtime Letterboxd Sentiment Dashboard")
-    st.caption("Realtime movie sentiment tracker powered by FastAPI, Streamlit & VADER")
+    </div>
+    """
+    st.markdown(logo_html, unsafe_allow_html=True)
+else:
+    st.warning(f"Logo not found at {LOGO_PATH}")
+
+st.markdown(
+    """
+    <h1 style='text-align:center; font-size:2.5rem; margin-top:0;'>🎬 Realtime Letterboxd Sentiment Dashboard</h1>
+    <p style='text-align:center; color:gray; font-size:1rem;'>
+        Realtime movie sentiment tracker powered by <b>FastAPI</b>, <b>Streamlit</b> & <b>VADER</b>
+    </p>
+    """,
+    unsafe_allow_html=True,
+)
 
 placeholder = st.empty()
 REFRESH_INTERVAL = 15
