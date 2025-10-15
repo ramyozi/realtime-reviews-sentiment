@@ -4,6 +4,7 @@ import pandas as pd
 import requests
 import streamlit as st
 from pathlib import Path
+import base64
 
 API_URL = "https://realtime-reviews-sentiment.onrender.com/reviews?limit=100"
 
@@ -15,13 +16,20 @@ GITHUB_URL = "https://github.com/ramyozi/realtime-reviews-sentiment"
 col_logo, col_title = st.columns([1, 6])
 with col_logo:
     if LOGO_PATH.exists():
+        with open(LOGO_PATH, "rb") as f:
+            logo_base64 = base64.b64encode(f.read()).decode("utf-8")
+
         logo_html = f"""
         <a href="{GITHUB_URL}" target="_blank">
-            <img src="data:image/svg+xml;base64,{Path(LOGO_PATH).read_bytes().decode('utf-8')}" 
-                 alt="Realtime Reviews Logo" width="70">
+            <img src="data:image/svg+xml;base64,{logo_base64}"
+                 alt="Realtime Reviews Logo"
+                 width="70"
+                 style="margin-top:8px;">
         </a>
         """
         st.markdown(logo_html, unsafe_allow_html=True)
+    else:
+        st.warning(f"Logo not found at {LOGO_PATH}")
 with col_title:
     st.title("🎬 Realtime Letterboxd Sentiment Dashboard")
     st.caption("Realtime movie sentiment tracker powered by FastAPI, Streamlit & VADER")
